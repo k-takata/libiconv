@@ -1,7 +1,8 @@
 #  Build debug version:		nmake
 #  Build release version:	nmake nodebug=1
 
-OUTPUTS =	iconv.dll iconv_no_i18n.exe
+OUTPUTS =	iconv.dll iconv_no_i18n.exe \
+		iconv_s.lib iconv_no_i18n_s.exe
 
 DEFINES =	/D_BIND_TO_CURRENT_VCLIBS_VERSION=1 \
 		/D_CRT_SECURE_NO_WARNINGS=1
@@ -74,6 +75,28 @@ localcharset.obj : ..\libcharset\lib\localcharset.c
 		$(DEFINES_LIBICONV) \
 		/Fo$@ /c ..\libcharset\lib\localcharset.c
 
+### iconv_s.lib
+
+OBJS_LIBICONV_LIB = lib_iconv_s.obj relocatable_s.obj localcharset_s.obj
+
+iconv_s.lib : $(OBJS_LIBICONV_LIB)
+	LIB /NOLOGO $(LFLAGS) /OUT:$@ $(OBJS_LIBICONV_LIB)
+
+lib_iconv_s.obj : ..\lib\iconv.c
+	$(CC) $(cdebug) $(cflags) $(cvarsdll) $(CCFLAGS) \
+		$(DEFINES_LIBICONV) \
+		/Fo$@ /c ..\lib\iconv.c /DSTATIC_LIBICONV
+
+relocatable_s.obj : ..\lib\relocatable.c
+	$(CC) $(cdebug) $(cflags) $(cvarsdll) $(CCFLAGS) \
+		$(DEFINES_LIBICONV) \
+		/Fo$@ /c ..\lib\relocatable.c /DSTATIC_LIBICONV
+
+localcharset_s.obj : ..\libcharset\lib\localcharset.c
+	$(CC) $(cdebug) $(cflags) $(cvarsdll) $(CCFLAGS) \
+		$(DEFINES_LIBICONV) \
+		/Fo$@ /c ..\libcharset\lib\localcharset.c /DSTATIC_LIBICONV
+
 ### iconv_no_i18n.exe
 
 OBJS_ICONV_NO_I18N_EXE = iconv_no_i18n.obj progname.obj width.obj safe-read.obj
@@ -97,6 +120,30 @@ width.obj : ..\srclib\uniwidth\width.c
 safe-read.obj : ..\srclib\safe-read.c
 	$(CC) $(cdebug) $(cflags) $(cvarsdll) $(CCFLAGS) \
 		/Fo$@ /c ..\srclib\safe-read.c
+
+### iconv_no_i18n_s.exe
+
+OBJS_ICONV_NO_I18N_S_EXE = iconv_no_i18n_s.obj progname_s.obj width_s.obj safe-read_s.obj
+
+iconv_no_i18n_s.exe : $(OBJS_ICONV_NO_I18N_S_EXE) iconv_s.lib
+	$(link) /NOLOGO $(ldebug) $(conlflags) $(conlibsdll) $(LFLAGS) \
+		/OUT:$@ $(OBJS_ICONV_NO_I18N_S_EXE) iconv_s.lib
+
+iconv_no_i18n_s.obj : ..\src\iconv_no_i18n.c
+	$(CC) $(cdebug) $(cflags) $(cvarsdll) $(CCFLAGS) \
+		/Fo$@ /c ..\src\iconv_no_i18n.c /DSTATIC_LIBICONV
+
+progname_s.obj : ..\srclib\progname.c
+	$(CC) $(cdebug) $(cflags) $(cvarsdll) $(CCFLAGS) \
+		/Fo$@ /c ..\srclib\progname.c /DSTATIC_LIBICONV
+
+width_s.obj : ..\srclib\uniwidth\width.c
+	$(CC) $(cdebug) $(cflags) $(cvarsdll) $(CCFLAGS) \
+		/Fo$@ /c ..\srclib\uniwidth\width.c /DSTATIC_LIBICONV
+
+safe-read_s.obj : ..\srclib\safe-read.c
+	$(CC) $(cdebug) $(cflags) $(cvarsdll) $(CCFLAGS) \
+		/Fo$@ /c ..\srclib\safe-read.c /DSTATIC_LIBICONV
 
 ### table-from.exe
 
